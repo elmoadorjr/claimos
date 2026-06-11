@@ -5974,9 +5974,12 @@ button:focus-visible, input:focus-visible, select:focus-visible {
         <input type="checkbox" id="adjEmailLienCheck" onchange="buildAdjEmail()"> Include lien language
       </label>
     </div>
-    <div style="padding:12px 18px;border-top:1px solid var(--bdr);display:flex;gap:8px;flex-shrink:0">
-      <button onclick="adjCopyAll(this)" style="flex:1;padding:8px;background:var(--a);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer">📋 Copy Full Email</button>
-      <button onclick="adjLogEmailNote()" style="flex:1;padding:8px;background:var(--inp);border:1px solid var(--bdr);border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;color:var(--t2)">📝 Log Sent + Generate Note</button>
+    <div style="padding:12px 18px;border-top:1px solid var(--bdr);display:flex;flex-direction:column;gap:8px;flex-shrink:0">
+      <button onclick="adjOpenInOutlook()" style="width:100%;padding:9px;background:var(--green);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer">📨 Open in Outlook</button>
+      <div style="display:flex;gap:8px">
+        <button onclick="adjCopyAll(this)" style="flex:1;padding:8px;background:var(--a);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer">📋 Copy Full Email</button>
+        <button onclick="adjLogEmailNote()" style="flex:1;padding:8px;background:var(--inp);border:1px solid var(--bdr);border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;color:var(--t2)">📝 Log Sent + Generate Note</button>
+      </div>
     </div>
   </div>
 </div>
@@ -19317,6 +19320,13 @@ function adjCopyAll(btn){
     setTimeout(()=>btn.textContent=orig, 1800)
     if(typeof showToast==='function') showToast('Adjuster email copied to clipboard','success')
   })
+}
+function adjOpenInOutlook(){
+  const subj = document.getElementById('adjEmailSubject')?.value||''
+  const body = document.getElementById('adjEmailBody')?.value||''
+  const gv2  = id => { const e=document.getElementById(id); return e?e.value.trim():'' }
+  const to   = gv2('adjusterEmail')||gv2('tplEmailAddress')||''
+  window.location.href = `mailto:${encodeURIComponent(to)}?subject=${encodeURIComponent(subj)}&body=${encodeURIComponent(body)}`
 }
 function adjLogEmailNote(){
   // Set TPL outcome to email_followup and generate note
