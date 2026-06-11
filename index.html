@@ -4708,7 +4708,13 @@ button:focus-visible, input:focus-visible, select:focus-visible {
 
   <div class="tb-div"></div>
 
-  <!-- Zone 6: Profile -->
+  <!-- Zone 6: SOP button -->
+  <button id="sopBtn" class="tb-btn icon-only" onclick="openSOPModal()" title="MVA SOP Reference" aria-label="Open SOP" style="gap:4px;font-size:11px;font-weight:700;padding:0 10px;min-width:unset;width:auto;display:flex;align-items:center;">
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="1.5" width="10" height="13" rx="1.5"/><line x1="5" y1="5" x2="9" y2="5"/><line x1="5" y1="7.5" x2="10" y2="7.5"/><line x1="5" y1="10" x2="8" y2="10"/><path d="M11 10.5 L14.5 14" stroke-width="1.8"/><circle cx="11" cy="9" r="2"/></svg>
+    SOP
+  </button>
+
+  <!-- Zone 7: Profile -->
   <button id="profileBtn" class="tb-btn" onclick="openProfileModal()" title="Profile"></button>
   <!-- NotePrep button injected by NotePrep module -->
 </div>
@@ -32921,6 +32927,1027 @@ _clog('[ClaimOS v213] Workflow improvement patch loaded — 8 improvements activ
 
 })()
 </script>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     ClaimOS SOP REFERENCE PANEL — MVA Standard Operating Procedures
+     ═══════════════════════════════════════════════════════════════ -->
+<style>
+/* ── SOP Modal Overlay ── */
+#sopModal {
+  display:none;position:fixed;inset:0;z-index:800;
+  background:rgba(11,13,28,.6);
+  align-items:center;justify-content:center;
+}
+#sopModal.open { display:flex; }
+
+/* ── SOP Panel ── */
+#sopPanel {
+  width:min(960px,96vw);height:min(88vh,860px);
+  background:#ffffff;border-radius:var(--rl);
+  box-shadow:var(--sh2);
+  display:flex;flex-direction:column;overflow:hidden;
+  border:1px solid #e2e5f2;
+}
+/* ── SOP Dark Mode — explicit solid colors to avoid transparent --card override ── */
+body.dark #sopPanel {
+  background: #0d1021;
+  border-color: #1e2440;
+}
+body.dark #sopHeader {
+  background: #09091a;
+  border-bottom-color: #1e2440;
+}
+body.dark #sopNav {
+  background: #09091a;
+  border-right-color: #1e2440;
+}
+body.dark .sop-nav-item {
+  color: #8d94bc;
+}
+body.dark .sop-nav-item:hover {
+  background: #111426;
+  color: #eceef8;
+}
+body.dark .sop-nav-item.active {
+  background: rgba(129,140,248,.18);
+  color: #818cf8;
+  border-left-color: #818cf8;
+}
+body.dark .sop-nav-section {
+  color: #3f4668;
+}
+body.dark #sopContent {
+  background: #0d1021;
+}
+body.dark .sop-page h1,
+body.dark .sop-page h2 { color: #eceef8; }
+body.dark .sop-page h3 { color: #818cf8; }
+body.dark .sop-page p,
+body.dark .sop-page li { color: #8d94bc; }
+body.dark .sop-page h2 {
+  border-bottom-color: #1e2440;
+}
+body.dark .sop-page .sop-scenario {
+  background: #111426;
+  border-color: #1e2440;
+}
+body.dark .sop-page .sop-scenario-title { color: #818cf8; }
+body.dark .sop-page .sop-script {
+  background: rgba(129,140,248,.14);
+  border-color: rgba(129,140,248,.28);
+  color: #8d94bc;
+}
+body.dark .sop-page .sop-note {
+  background: #1a1000;
+  border-color: #78350f;
+  color: #8d94bc;
+}
+body.dark .sop-page .sop-warning {
+  background: #190303;
+  border-color: #7f1d1d;
+  color: #8d94bc;
+}
+body.dark .sop-page .sop-table th {
+  background: #111426;
+  border-color: #1e2440;
+  color: #eceef8;
+}
+body.dark .sop-page .sop-table td {
+  border-color: #1e2440;
+  color: #8d94bc;
+}
+body.dark .sop-page .sop-table tr:nth-child(even) td {
+  background: #111426;
+}
+body.dark .sop-step {
+  border-bottom-color: #1e2440;
+}
+body.dark .sop-step-text { color: #8d94bc; }
+body.dark #sopSearchWrap #sopSearch {
+  background: #111426;
+  border-color: #1e2440;
+  color: #eceef8;
+}
+body.dark #sopSearch::placeholder { color: #3f4668; }
+body.dark #sopAIStrip {
+  background: #09091a;
+  border-top-color: #1e2440;
+}
+body.dark #sopAIToggleLabel { color: #8d94bc; }
+body.dark #sopAIToggleRow:hover { background: #111426; }
+body.dark #sopChatMsgs { background: #09091a; }
+body.dark .sop-chat-msg.ai {
+  background: #111426;
+  border-color: #1e2440;
+  color: #8d94bc;
+}
+body.dark .sop-chat-msg.user {
+  background: #818cf8;
+  color: #fff;
+}
+body.dark #sopAIInput {
+  background: #111426;
+  border-color: #1e2440;
+  color: #eceef8;
+}
+body.dark #sopAIInput::placeholder { color: #3f4668; }
+body.dark .sop-qq-chip {
+  background: #111426;
+  border-color: #1e2440;
+  color: #8d94bc;
+}
+body.dark .sop-qq-chip:hover {
+  border-color: #818cf8;
+  color: #818cf8;
+  background: rgba(129,140,248,.14);
+}
+body.dark .sop-close-btn { color: #3f4668; }
+body.dark .sop-close-btn:hover { color: #eceef8; background: #111426; }
+body.dark #sopHeaderTitle { color: #eceef8; }
+body.dark .sop-badge {
+  background: rgba(129,140,248,.18);
+  color: #818cf8;
+  border-color: rgba(129,140,248,.28);
+}
+
+/* ── SOP Header ── */
+#sopHeader {
+  display:flex;align-items:center;gap:10px;
+  padding:14px 18px;border-bottom:1px solid #e2e5f2;
+  flex-shrink:0;background:#f8f9fe;
+}
+#sopHeaderTitle {
+  font-size:15px;font-weight:800;color:#0b0d1c;
+  letter-spacing:-.01em;flex:1;display:flex;align-items:center;gap:8px;
+}
+#sopHeaderTitle span.sop-badge {
+  font-size:9.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+  background:#eef0fd;color:#5b5ef4;border:1px solid #c7c9f8;
+  padding:2px 7px;border-radius:20px;
+}
+
+/* ── SOP Search ── */
+#sopSearchWrap {
+  position:relative;display:flex;align-items:center;
+}
+#sopSearch {
+  width:220px;height:32px;border:1px solid #c8cde5;border-radius:var(--rs);
+  background:#ffffff;color:#0b0d1c;font-size:12.5px;padding:0 10px 0 32px;
+  outline:none;transition:border-color .15s;
+}
+#sopSearch:focus { border-color:#5b5ef4; }
+#sopSearch::placeholder { color:#9298b2; }
+#sopSearchIcon {
+  position:absolute;left:9px;color:#9298b2;pointer-events:none;
+}
+.sop-close-btn {
+  background:none;border:none;cursor:pointer;color:#9298b2;
+  font-size:18px;line-height:1;padding:4px 6px;border-radius:var(--rs);
+  transition:color .12s,background .12s;
+}
+.sop-close-btn:hover { color:#0b0d1c;background:#eef0f9; }
+
+/* ── SOP Layout ── */
+#sopBody {
+  display:flex;flex:1;min-height:0;
+}
+
+/* ── SOP Nav Sidebar ── */
+#sopNav {
+  width:210px;flex-shrink:0;border-right:1px solid #e2e5f2;
+  overflow-y:auto;padding:10px 0;background:#f8f9fe;
+}
+#sopNav::-webkit-scrollbar { width:4px; }
+#sopNav::-webkit-scrollbar-thumb { background:#c8cde5;border-radius:4px; }
+
+.sop-nav-section {
+  font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.09em;
+  color:#9298b2;padding:10px 16px 4px;
+}
+.sop-nav-item {
+  display:flex;align-items:center;gap:8px;padding:7px 16px;
+  font-size:12px;font-weight:500;color:#4a506b;cursor:pointer;
+  border-left:3px solid transparent;transition:all .12s;
+  line-height:1.3;
+}
+.sop-nav-item:hover { background:#eef0f9;color:#0b0d1c; }
+.sop-nav-item.active {
+  background:#ebebfd;color:#5b5ef4;border-left-color:#5b5ef4;font-weight:700;
+}
+.sop-nav-dot {
+  width:6px;height:6px;border-radius:50%;flex-shrink:0;
+  background:#c8cde5;
+}
+.sop-nav-item.active .sop-nav-dot { background:#5b5ef4; }
+
+/* ── SOP Content + AI Split ── */
+#sopRight {
+  flex:1;display:flex;flex-direction:column;min-width:0;
+}
+
+/* ── SOP Content ── */
+#sopContent {
+  flex:1;overflow-y:auto;padding:24px 28px;min-height:0;background:#ffffff;
+}
+#sopContent::-webkit-scrollbar { width:5px; }
+#sopContent::-webkit-scrollbar-thumb { background:#c8cde5;border-radius:4px; }
+
+/* SOP content typography */
+.sop-page { display:none; animation:sopFadeIn .18s ease; }
+.sop-page.active { display:block; }
+@keyframes sopFadeIn { from{opacity:0;transform:translateY(4px)} to{opacity:1;transform:none} }
+
+.sop-page h1 {
+  font-size:17px;font-weight:800;color:#0b0d1c;margin:0 0 4px;
+  letter-spacing:-.02em;
+}
+.sop-page .sop-subtitle {
+  font-size:12px;color:#9298b2;margin:0 0 20px;
+}
+.sop-page h2 {
+  font-size:13px;font-weight:700;color:#0b0d1c;margin:20px 0 8px;
+  padding-bottom:6px;border-bottom:1px solid #e2e5f2;
+}
+.sop-page h3 {
+  font-size:10.5px;font-weight:700;color:#5b5ef4;margin:14px 0 6px;
+  text-transform:uppercase;letter-spacing:.04em;
+}
+.sop-page p, .sop-page li {
+  font-size:12.5px;color:#4a506b;line-height:1.65;margin:0 0 6px;
+}
+.sop-page ul, .sop-page ol {
+  padding-left:20px;margin:6px 0 10px;
+}
+.sop-page .sop-scenario {
+  background:#f8f9fe;border:1px solid #e2e5f2;border-radius:var(--rs);
+  padding:12px 16px;margin:10px 0;
+}
+.sop-page .sop-scenario-title {
+  font-size:11px;font-weight:800;color:#5b5ef4;text-transform:uppercase;
+  letter-spacing:.05em;margin-bottom:8px;
+}
+.sop-page .sop-script {
+  background:#eef0fd;border:1px solid #c7c9f8;border-radius:var(--rs);
+  padding:10px 14px;margin:8px 0;font-size:12px;color:#3a3d70;
+  font-style:italic;line-height:1.6;
+}
+.sop-page .sop-script::before {
+  content:"💬 Script";display:block;font-style:normal;font-weight:700;
+  font-size:9.5px;color:#5b5ef4;text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px;
+}
+.sop-page .sop-note {
+  background:#fffbeb;border:1px solid #fcd34d;border-radius:var(--rs);
+  padding:10px 14px;margin:8px 0;font-size:12px;color:#4a506b;line-height:1.6;
+}
+.sop-page .sop-note::before {
+  content:"📝 Note Example";display:block;font-weight:700;
+  font-size:9.5px;color:#d97706;text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px;
+}
+.sop-page .sop-warning {
+  background:#fff1f2;border:1px solid #fecdd3;border-radius:var(--rs);
+  padding:10px 14px;margin:8px 0;font-size:12px;color:#4a506b;
+}
+.sop-page .sop-warning::before {
+  content:"⚠️ Important";display:block;font-weight:700;
+  font-size:9.5px;color:#ef4444;text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px;
+}
+.sop-page .sop-table {
+  width:100%;border-collapse:collapse;margin:10px 0;font-size:12px;
+}
+.sop-page .sop-table th {
+  background:#f8f9fe;border:1px solid #e2e5f2;padding:7px 10px;
+  font-weight:700;color:#0b0d1c;font-size:11px;text-align:left;
+}
+.sop-page .sop-table td {
+  border:1px solid #e2e5f2;padding:7px 10px;color:#4a506b;vertical-align:top;
+}
+.sop-page .sop-table tr:nth-child(even) td { background:#f8f9fe; }
+.sop-step {
+  display:flex;gap:10px;padding:8px 0;border-bottom:1px solid #e2e5f2;
+  align-items:flex-start;
+}
+.sop-step:last-child { border-bottom:none; }
+.sop-step-num {
+  width:22px;height:22px;border-radius:50%;background:#5b5ef4;color:#fff;
+  font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.sop-step-text { font-size:12.5px;color:#4a506b;line-height:1.6; }
+mark.sop-hl { background:#fef08a;color:#713f12;border-radius:2px;padding:0 1px; }
+body.dark mark.sop-hl { background:#854d0e;color:#fef9c3; }
+
+/* ── AI Chat Strip ── */
+#sopAIStrip {
+  border-top:1px solid #e2e5f2;background:#f8f9fe;flex-shrink:0;
+}
+#sopAIToggleRow {
+  display:flex;align-items:center;gap:8px;padding:8px 14px;cursor:pointer;
+  user-select:none;
+}
+#sopAIToggleRow:hover { background:#eef0f9; }
+#sopAIToggleLabel {
+  font-size:11.5px;font-weight:700;color:#4a506b;flex:1;
+  display:flex;align-items:center;gap:6px;
+}
+#sopAICaret { font-size:10px;color:#9298b2;transition:transform .15s; }
+#sopAICaret.open { transform:rotate(180deg); }
+
+#sopAIPanel { display:none;flex-direction:column; }
+#sopAIPanel.open { display:flex; }
+#sopChatMsgs {
+  max-height:200px;overflow-y:auto;padding:10px 14px;
+  display:flex;flex-direction:column;gap:8px;background:#f8f9fe;
+}
+#sopChatMsgs::-webkit-scrollbar { width:4px; }
+#sopChatMsgs::-webkit-scrollbar-thumb { background:#c8cde5;border-radius:4px; }
+
+.sop-chat-msg {
+  max-width:85%;font-size:12px;line-height:1.55;padding:8px 12px;border-radius:8px;
+}
+.sop-chat-msg.user {
+  align-self:flex-end;background:#5b5ef4;color:#fff;border-bottom-right-radius:3px;
+}
+.sop-chat-msg.ai {
+  align-self:flex-start;background:#ffffff;border:1px solid #e2e5f2;
+  color:#4a506b;border-bottom-left-radius:3px;
+}
+.sop-chat-msg.ai.loading { color:#9298b2;font-style:italic; }
+
+#sopAIInputRow {
+  display:flex;gap:8px;padding:8px 14px 12px;background:#f8f9fe;
+}
+#sopAIInput {
+  flex:1;height:34px;border:1px solid #c8cde5;border-radius:var(--rs);
+  background:#ffffff;color:#0b0d1c;font-size:12.5px;padding:0 12px;
+  outline:none;transition:border-color .15s;
+}
+#sopAIInput:focus { border-color:#5b5ef4; }
+#sopAIInput::placeholder { color:#9298b2; }
+#sopAISendBtn {
+  height:34px;padding:0 14px;background:#5b5ef4;color:#fff;border:none;
+  border-radius:var(--rs);font-size:12px;font-weight:700;cursor:pointer;
+  transition:background .12s;flex-shrink:0;
+}
+#sopAISendBtn:hover { background:#4340d4; }
+#sopAISendBtn:disabled { opacity:.5;cursor:default; }
+
+.sop-quick-q {
+  display:flex;flex-wrap:wrap;gap:5px;padding:0 14px 8px;background:#f8f9fe;
+}
+.sop-qq-chip {
+  background:#ffffff;border:1px solid #c8cde5;border-radius:20px;
+  font-size:11px;color:#4a506b;padding:3px 10px;cursor:pointer;
+  transition:all .12s;
+}
+.sop-qq-chip:hover { border-color:#5b5ef4;color:#5b5ef4;background:#eef0fd; }
+</style>
+
+<!-- SOP MODAL -->
+<div id="sopModal" onclick="if(event.target===this)closeSOPModal()" role="dialog" aria-modal="true" aria-label="MVA SOP Reference">
+  <div id="sopPanel">
+
+    <!-- Header -->
+    <div id="sopHeader">
+      <div id="sopHeaderTitle">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="1.5" width="10" height="13" rx="1.5"/><line x1="5" y1="5" x2="9" y2="5"/><line x1="5" y1="7.5" x2="10" y2="7.5"/><line x1="5" y1="10" x2="8" y2="10"/></svg>
+        MVA Standard Operating Procedures
+        <span class="sop-badge">SOP Reference</span>
+      </div>
+      <div id="sopSearchWrap">
+        <svg id="sopSearchIcon" width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="6.5" cy="6.5" r="4.5"/><line x1="10" y1="10" x2="14" y2="14"/></svg>
+        <input id="sopSearch" type="text" placeholder="Search SOP…" oninput="sopSearchFilter(this.value)" onkeydown="if(event.key==='Escape')closeSOPModal()">
+      </div>
+      <button class="sop-close-btn" onclick="closeSOPModal()" title="Close SOP">✕</button>
+    </div>
+
+    <!-- Body -->
+    <div id="sopBody">
+
+      <!-- Nav Sidebar -->
+      <nav id="sopNav" role="navigation" aria-label="SOP Sections">
+        <div class="sop-nav-section">Overview</div>
+        <div class="sop-nav-item active" data-page="overview" onclick="sopGoTo('overview')"><span class="sop-nav-dot"></span>Introduction & Scope</div>
+        <div class="sop-nav-item" data-page="abbreviations" onclick="sopGoTo('abbreviations')"><span class="sop-nav-dot"></span>Abbreviations</div>
+
+        <div class="sop-nav-section">Workflows</div>
+        <div class="sop-nav-item" data-page="patient-pursuit" onclick="sopGoTo('patient-pursuit')"><span class="sop-nav-dot"></span>Patient Pursuit</div>
+        <div class="sop-nav-item" data-page="payer-validation" onclick="sopGoTo('payer-validation')"><span class="sop-nav-dot"></span>Payer Validation</div>
+        <div class="sop-nav-item" data-page="bill-sub-pending" onclick="sopGoTo('bill-sub-pending')"><span class="sop-nav-dot"></span>Bill Submission Pending</div>
+        <div class="sop-nav-item" data-page="fp-bill-filed" onclick="sopGoTo('fp-bill-filed')"><span class="sop-nav-dot"></span>1st Party / Bill Filed</div>
+        <div class="sop-nav-item" data-page="commercial" onclick="sopGoTo('commercial')"><span class="sop-nav-dot"></span>Commercial Bill Filed</div>
+        <div class="sop-nav-item" data-page="tpl-bill-por" onclick="sopGoTo('tpl-bill-por')"><span class="sop-nav-dot"></span>Third Party / Bill POR</div>
+        <div class="sop-nav-item" data-page="eob-requested" onclick="sopGoTo('eob-requested')"><span class="sop-nav-dot"></span>EOB Requested</div>
+
+        <div class="sop-nav-section">Standards</div>
+        <div class="sop-nav-item" data-page="communication" onclick="sopGoTo('communication')"><span class="sop-nav-dot"></span>Communication Standards</div>
+        <div class="sop-nav-item" data-page="voicemail" onclick="sopGoTo('voicemail')"><span class="sop-nav-dot"></span>Voicemail Guide</div>
+        <div class="sop-nav-item" data-page="compliance" onclick="sopGoTo('compliance')"><span class="sop-nav-dot"></span>Compliance & HIPAA</div>
+        <div class="sop-nav-item" data-page="faq" onclick="sopGoTo('faq')"><span class="sop-nav-dot"></span>FAQ / Updates</div>
+      </nav>
+
+      <!-- Right: Content + AI -->
+      <div id="sopRight">
+        <div id="sopContent">
+
+          <!-- PAGE: Overview -->
+          <div class="sop-page active" id="sopPage-overview">
+            <h1>Motor Vehicle Accident SOP</h1>
+            <p class="sop-subtitle">Standard Operating Procedure — ClaimOS Reference</p>
+            <h2>Purpose</h2>
+            <p>This SOP provides a clear, standardized workflow for reviewing MVA claims — from initial patient pursuit through final payment resolution.</p>
+            <div class="sop-step"><span class="sop-step-num">1</span><span class="sop-step-text"><strong>Validate payer information</strong> — confirm insurance, subscriber ID, claim number, and coverage details.</span></div>
+            <div class="sop-step"><span class="sop-step-num">2</span><span class="sop-step-text"><strong>Submit medical bills</strong> — via e-submit, fax, or mail depending on payer setup.</span></div>
+            <div class="sop-step"><span class="sop-step-num">3</span><span class="sop-step-text"><strong>Follow up with payers</strong> — call or email for claim status at defined intervals.</span></div>
+            <div class="sop-step"><span class="sop-step-num">4</span><span class="sop-step-text"><strong>Manage claim status</strong> — update Case Page with correct status and next review date.</span></div>
+            <div class="sop-step"><span class="sop-step-num">5</span><span class="sop-step-text"><strong>Resolve claims</strong> — handle payments, denials, appeals, or returns as appropriate.</span></div>
+            <h2>Scope</h2>
+            <p>Applies to all MVA employees responsible for reviewing medical billing accounts, contacting payers, documenting account activity, and resolving claim issues.</p>
+            <h2>Key Systems</h2>
+            <table class="sop-table"><thead><tr><th>Tool / System</th><th>Purpose</th></tr></thead><tbody>
+              <tr><td><strong>Enforcer 360</strong></td><td>Review patient accounts, claim status, and billing records</td></tr>
+              <tr><td><strong>UB-04 / CMS 1500</strong></td><td>Facility or hospital billing forms</td></tr>
+              <tr><td><strong>Nitro PDF</strong></td><td>Editing and reviewing billing documents</td></tr>
+              <tr><td><strong>Payer Portals / Zoom</strong></td><td>Outbound call and portal access</td></tr>
+            </tbody></table>
+            <h2>Claim Status Reference</h2>
+            <table class="sop-table"><thead><tr><th>Status</th><th>Required Action</th></tr></thead><tbody>
+              <tr><td>Claim Received</td><td>Confirm receipt with payer and verify processing timeline</td></tr>
+              <tr><td>Pending Payment</td><td>Monitor progress, follow up if timeline exceeded</td></tr>
+              <tr><td>Paid</td><td>Confirm amount, close or reconcile account</td></tr>
+              <tr><td>Denied</td><td>Identify denial reason, determine resubmission or appeal</td></tr>
+              <tr><td>Claim Not Received</td><td>Resubmit claim, confirm transmission with payer</td></tr>
+            </tbody></table>
+          </div>
+
+          <!-- PAGE: Patient Pursuit -->
+          <div class="sop-page" id="sopPage-patient-pursuit">
+            <h1>Patient Pursuit</h1>
+            <p class="sop-subtitle">Contacting patients to gather accident and insurance details</p>
+            <div class="sop-warning">When leaving a voicemail, <strong>do not leave any sensitive information</strong>. Only provide: your name, facility name, callback number, and Claim ID as reference.</div>
+            <h2>Voicemail Script</h2>
+            <div class="sop-script">"Good Morning/Afternoon. My name is _____ and I am calling from [Facility]. If you could please return my call at (615) 694-8131 ext 992566 and please reference our Claim ID _________. Thank you and have a wonderful day."</div>
+            <h2>Scenario 1 — Patient Available, Details Provided</h2>
+            <div class="sop-script">"Hello. My name is _____ and I am calling on behalf of [Facility]. This call is being recorded for quality assurance. May I please speak with [Patient Name]?"<br><br>After ID: "For security purposes, can you please confirm your Date of Birth?"</div>
+            <p><strong>If DOB not confirmed:</strong> Advise a letter will be sent on file. <strong>If DOB wrong:</strong> End call, advise they can expect mail.</p>
+            <h3>Questions to Ask</h3>
+            <ul>
+              <li>How many vehicles involved? (SMVA / MMVA / PMVA)</li>
+              <li>Date of the accident?</li>
+              <li>Were you the driver, passenger, or pedestrian?</li>
+              <li>Were you at fault?</li>
+              <li>If NOT at fault → T/P insurance company, policyholder name, claim filed?</li>
+              <li>If AT fault → your auto insurance name and claim number</li>
+              <li>Health insurance provider, Policy #, Group #, Member ID</li>
+              <li>If MMVA → attorney represented? (Law firm, attorney name, email, phone, fax, address)</li>
+            </ul>
+            <h2>Sample Notation</h2>
+            <div class="sop-note">"Outbound call placed to [Patient] at [Phone]. Spoke with patient confirming 2 vehicles involved — MMVA, DOA: 03/30/26. Patient was driver, not at fault. T/P: [Name], Insurance: USAA, Claim #: 015651784808. HI: Cigna, Member ID: U2555070801. Attorney represented: Steven Nunez 210-269-0599. Moving to Validation Pending — Level 1. NRD — 1 Day."</div>
+            <h3>Case Page After Scenario 1</h3>
+            <ul><li><strong>Account Status:</strong> Validation Pending — Level 1</li><li><strong>Review Date:</strong> 1 Day</li></ul>
+            <h2>Scenario 2 — Due Diligence (Health Insurance Available)</h2>
+            <p>If 2 questionnaires have been sent and patient is unresponsive, activate HI. Move to <strong>CBSP</strong>. NRD: 1 Day.</p>
+            <h2>Scenario 3 — Due Diligence (Bill Filed / Bill POR)</h2>
+            <p>If HI unavailable but FP and TP available — activate TP. Move to <strong>BSP</strong>. NRD: 1 Day.</p>
+            <h2>Scenario 3 — Due Diligence (No Payer)</h2>
+            <p>Go to <strong>Options → Return Claim</strong>. Reason: "No Form of Ins. Avail. — Patient Responsibility."</p>
+          </div>
+
+          <!-- PAGE: Payer Validation -->
+          <div class="sop-page" id="sopPage-payer-validation">
+            <h1>Payer Validation</h1>
+            <p class="sop-subtitle">Validating First Party, Third Party, and Attorney contacts</p>
+            <h2>Reviewing the Account</h2>
+            <p>On the MVA Tab, review reimbursement paths: Primary = First Party, Secondary = Patient's Health (do not call), Tertiary = Third Party, Attorney Info if applicable.</p>
+            <h2>First Party Auto Payer Contact</h2>
+            <div class="sop-script">"Hello, this is [Your Name] calling from [Facility]. This call may be recorded for quality and training purposes. I'm calling to see if a patient has filed a claim."</div>
+            <h3>Confirm the Following</h3>
+            <ul>
+              <li>Date of Injury • Claim Number • Policy Number</li>
+              <li>Payer Location (billing address) • Adjuster info (name, address, phone, fax, email)</li>
+              <li>Claim type: MedPay / PIP / UM/UIM</li>
+              <li>Patient role: Driver / Passenger / Pedestrian | At Fault / Not At Fault</li>
+              <li>Claim status: Open or Closed (reason if closed)</li>
+              <li>SMVA / MMVA / PMVA</li>
+            </ul>
+            <div class="sop-note">"Called First Party Liberty Mutual at 800-500-7044 and spoke with Tim. Confirmed DOI and claim details. Med Pay claim is open. Patient was not at fault driver in MMVA. TPL is listed as GEICO but no claim info given. Patient has not retained an attorney."</div>
+            <h2>Third Party Auto Payer Contact</h2>
+            <div class="sop-script">"Hello, this is [Your Name] calling from [Facility]. This call may be recorded. I'm calling to see if a patient has filed a claim."</div>
+            <p>Same confirmation fields as FP, but claim type = <strong>Bodily Injury (BI)</strong>.</p>
+            <div class="sop-note">"Called TPL USAA at 800-123-4567 and spoke with Heather. Confirmed DOI and claim details. BI claim is open. Patient was not at fault in MMVA. FP is Liberty Mutual but no claim info given. Patient has retained an attorney: Lawman Campbell at 888-111-1234."</div>
+            <h2>Attorney Contact</h2>
+            <div class="sop-script">"Hello, this is [Your Name] from [Facility]. Our records indicate your firm represents [Patient Name] for a Motor Vehicle accident. Could you please confirm?"</div>
+            <p>Request: <strong>Letter of Representation</strong> and <strong>Signed Medical Authorization</strong> — fax to 615-486-6518 or email MVA@enablecomp.com.</p>
+            <h3>Account Status After Validation</h3>
+            <table class="sop-table"><thead><tr><th>Validated</th><th>Status</th><th>Review</th></tr></thead><tbody>
+              <tr><td>FP validated</td><td>Validation Pending — Level 2</td><td>1 Day</td></tr>
+              <tr><td>TP validated</td><td>Validation Pending — Level 2</td><td>1 Day</td></tr>
+              <tr><td>Attorney confirmed</td><td>Validation Pending — Level 2</td><td>1 Day</td></tr>
+              <tr><td>Voicemail left</td><td>Validation Pending — Level 1</td><td>2 Days</td></tr>
+            </tbody></table>
+          </div>
+
+          <!-- PAGE: Bill Submission Pending -->
+          <div class="sop-page" id="sopPage-bill-sub-pending">
+            <h1>Bill Submission Pending</h1>
+            <p class="sop-subtitle">Submitting bills to payers after validation</p>
+            <div class="sop-warning">Check the <strong>Timely Filing Date</strong> on the MVA tab. If deadline is within 10 days (or shown in red/passed), add to escalation tracker for "missed deadline" and continue billing auto insurance.</div>
+            <h2>MVA Tab Checklist Before Submitting</h2>
+            <ul>
+              <li>✅ Payer Selection & Payer Location</li>
+              <li>✅ Reimbursement Path</li>
+              <li>✅ Subscriber Name (first and last)</li>
+              <li>✅ Subscriber ID</li>
+              <li>✅ Relationship</li>
+              <li>✅ Follow-up Date & Status</li>
+            </ul>
+            <h2>Documents to Upload</h2>
+            <p>Go to <strong>Options → Attach UB/1500</strong> to auto-generate and upload. Verify AOB is present (check Reports → MVA → Accident Link Analysis if missing).</p>
+            <ul>
+              <li><strong>PIP states:</strong> Medical records required (auto-uploaded on claim import). Only required for PIP claims.</li>
+              <li><strong>MedPay:</strong> No medical records required — only AOB and UB/1500.</li>
+            </ul>
+            <h2>First Party Submission — E-Submit</h2>
+            <p>If E-Submit button is present → click it → select all applicable documents → attach.</p>
+            <h2>First Party Submission — By Fax</h2>
+            <div class="sop-step"><span class="sop-step-num">1</span><span class="sop-step-text">Open Submit tab in Enforcer. Enter payer fax number in Ready for Faxing field.</span></div>
+            <div class="sop-step"><span class="sop-step-num">2</span><span class="sop-step-text">Put payer's claim number in subject line (use Subscriber ID if claim # not in header).</span></div>
+            <div class="sop-step"><span class="sop-step-num">3</span><span class="sop-step-text">Use appropriate template. Include patient name in Fax Body field.</span></div>
+            <div class="sop-step"><span class="sop-step-num">4</span><span class="sop-step-text">Select your team in Team Mailbox. Select "Claim" in Fax Type dropdown.</span></div>
+            <div class="sop-step"><span class="sop-step-num">5</span><span class="sop-step-text">Click Fax → select all applicable documents → attach.</span></div>
+            <h3>After Submission — Case Page Update</h3>
+            <ul>
+              <li><strong>Review Date:</strong> 30 days from submission</li>
+              <li><strong>Status FP:</strong> First Party Claim — Bill Filed</li>
+              <li><strong>Status TPL:</strong> Third Party Claim — Bill POR</li>
+              <li>Complete Initial Bill Date / Bill POR Date field</li>
+            </ul>
+            <h3>Notation (Note Type: Enter Claim Data into Enforcer — 18)</h3>
+            <p>Include: payer billed, submission type (fax/mail/e-submit), documents submitted.</p>
+          </div>
+
+          <!-- PAGE: FP Bill Filed -->
+          <div class="sop-page" id="sopPage-fp-bill-filed">
+            <h1>1st Party / Bill Filed</h1>
+            <p class="sop-subtitle">Follow-up on First Party auto insurance claims</p>
+            <div class="sop-warning">Do NOT work accounts that have Attorney representation on file.</div>
+            <h2>Scenario 1 — Bill Received / Processing</h2>
+            <div class="sop-script">"Hello, this is [Name] calling from [Facility]. This call may be recorded. I'm calling to see if there is a claim filed for a mutual patient."</div>
+            <p>Confirm: When received? Status? Documents needed? Adjuster info? Attorney on file? Expected timeline?</p>
+            <div class="sop-note">"Called Geico at 800-413-4153. Spoke with Rick. Claim #451235718 received 11/25/2024, currently processing."</div>
+            <ul><li><strong>Status:</strong> Bill Filed | <strong>Review:</strong> 30 Days</li></ul>
+            <h2>Scenario 2 — Pending Payment</h2>
+            <p>Ask: Expected payment amount? Expected payment date? Adjuster info?</p>
+            <div class="sop-note">"Called State Farm at 713-456-1145. Spoke with Amy. Claim #59178168 received 10/24/2024. Set to pay $447.30 on 11/04/2024."</div>
+            <ul><li><strong>MVA Status:</strong> FP Potential Payer | <strong>Status:</strong> Bill Filed | <strong>Review:</strong> 15 Days</li></ul>
+            <h2>Scenario 3 — Paid</h2>
+            <p>Obtain: Check Number, Check Amount, Check Date, Facility paid to.</p>
+            <div class="sop-note">"Called Allstate at 800-414-4616. Spoke with Heather. Claim #5612689151 received 11/01/2024. Paid $506.16 on 11/10/2024 with check #5697134 to [Facility]."</div>
+            <ul><li><strong>MVA Status:</strong> FP Paid | <strong>Status:</strong> Payment Mailed | <strong>Review:</strong> 15 Days</li></ul>
+            <h2>Scenario 4 — Denied</h2>
+            <p>Get: Denial reason, request EOB/Denial Letter to MVA@enablecomp.com or fax 615-873-0959, appeal deadline, appeal address/fax.</p>
+            <div class="sop-note">"Called The General at 879-146-5519. Spoke with John. Claim #78185058 denied 10/02/2024 for exhausted medical benefits. Requested exhaust letter to fax 615-486-6518."</div>
+            <ul><li><strong>Status:</strong> EOB Requested | <strong>Review:</strong> 15 Days</li></ul>
+            <h2>Scenario 5 — Bill Not Received</h2>
+            <p>Ask: Timely filing date? Billing mailing address and fax number? Confirm correct address on file.</p>
+            <div class="sop-note">"Called Mercury at 777-888-1111. Spoke with Junita. No claim on file for DOS. Confirmed address correct. Fax corrected from 815-444-5164 to 514-444-6131. Sending back to onshore to rebill."</div>
+            <ul><li><strong>Status:</strong> Request ReBill — Initial | <strong>Review:</strong> 1 Day</li></ul>
+          </div>
+
+          <!-- PAGE: Commercial -->
+          <div class="sop-page" id="sopPage-commercial">
+            <h1>Commercial Bill Filed</h1>
+            <p class="sop-subtitle">Follow-up on health/commercial insurance claims</p>
+            <p>Review the MVA Tab for Health Insurance reimbursement paths: Commercial or Government. Check Notes Tab to verify payer before calling.</p>
+            <h2>Scenario 1 — Processing</h2>
+            <p>Confirm: Date received? Claim number? Status? Documents needed? Expected timeline?</p>
+            <div class="sop-note">"Called BCBS at 800-800-800. Spoke with Leslie. Bill received 1/3/25. Claim #BC01-5689. Currently processing — allow 30 days."</div>
+            <ul><li><strong>MVA Status:</strong> COM Check Claim Status | <strong>Status:</strong> Commercial Bill Filed | <strong>Review:</strong> 30 Days</li></ul>
+            <h2>Scenario 2 — Pending Payment</h2>
+            <p>Ask: Recommended allowance amount? Expected payment date?</p>
+            <ul><li><strong>Status:</strong> Commercial Bill Filed | <strong>Review:</strong> 15 Days</li></ul>
+            <h2>Scenario 3 — Paid</h2>
+            <p>Obtain: Check Number, Check Amount, Check Date, Facility paid to.</p>
+            <div class="sop-note">"Called HI Aetna. Spoke with Ray. Claim KJ2RD71 received 01/14/26, processed 02/07/26. Paid $8,613.74. Draft #1234208238 via EFT to account ending 5979. Ref: RAYM03132026."</div>
+            <ul><li><strong>MVA Status:</strong> COM Paid | <strong>Status:</strong> Payment Mailed | <strong>Review:</strong> 15 Days</li></ul>
+            <h2>Scenario 4 — Denied</h2>
+            <p>Get: Denial reason, EOB/Denial Letter to MVA@enablecomp.com or fax 615-873-0959, appeal deadline and address.</p>
+            <ul><li><strong>Status:</strong> EOB Requested | <strong>Review:</strong> 15 Days</li></ul>
+            <h2>Scenario 5 — Not Received</h2>
+            <p>Ask: Timely filing date? Billing address and fax? Request rebill.</p>
+            <div class="sop-note">"Called BCBS. Spoke with Mitchell. No bill received. Timely filing 180 days from discharge. Confirmed billing address and fax. Requesting resubmission."</div>
+            <ul><li><strong>Status:</strong> Request ReBill — Initial | <strong>Review:</strong> 1 Day</li></ul>
+            <h2>Quick Reference Table</h2>
+            <table class="sop-table"><thead><tr><th>Bill Status</th><th>MVA Status</th><th>Case Page Status</th><th>Review</th></tr></thead><tbody>
+              <tr><td>Processing</td><td>COM Bill Filed</td><td>Commercial Bill Filed</td><td>30 Days</td></tr>
+              <tr><td>Pending Payment</td><td>COM Bill Filed</td><td>Commercial Bill Filed</td><td>15 Days</td></tr>
+              <tr><td>Paid</td><td>COM Paid</td><td>Payment Mailed</td><td>15 Days</td></tr>
+              <tr><td>Denied</td><td>COM Check Claim Status</td><td>EOB Requested</td><td>15 Days</td></tr>
+              <tr><td>Not Received</td><td>COM Check Claim Status</td><td>Request ReBill — Initial</td><td>1 Day</td></tr>
+            </tbody></table>
+          </div>
+
+          <!-- PAGE: TPL Bill POR -->
+          <div class="sop-page" id="sopPage-tpl-bill-por">
+            <h1>Third Party — Bill POR</h1>
+            <p class="sop-subtitle">Following up on third-party liability and attorney-represented claims</p>
+            <div class="sop-warning">If the claimant is attorney-represented at any point, move claim to <strong>Validation Pending — Level 2</strong>.</div>
+            <h2>Prerequisites</h2>
+            <ul>
+              <li>Patient must have a TPL claim and/or attorney representation</li>
+              <li>Claims must be notated and updated with all relevant info</li>
+              <li>Review for lien filing — confirm if lien was sent</li>
+              <li>Prior to follow-up, review prior notes and confirm lien documentation</li>
+            </ul>
+            <h2>Contact via Email</h2>
+            <p>Send directly to claims adjuster. Subject: <strong>[ENCRYPT] Claim #: [number]</strong></p>
+            <div class="sop-script">Claim #: {00000} | Date of Service: {DOS} | Balance: {amount} | Name: {patient} | Facility: {facility}<br><br>"I'm reaching out to obtain the status of the above claim. Our team has previously provided billing — could you confirm receipt? [If lien applicable:] A lien is on file — please advise if you need a copy. Please advise on most recent contact with claimant and if anything is needed from the hospital."</div>
+            <ul><li><strong>Status:</strong> Billed POR | <strong>Review:</strong> 3 Days</li></ul>
+            <h2>Contact via Phone</h2>
+            <div class="sop-script">"Hello, this is [Name] from [Facility] to obtain bill status. This call is being recorded."</div>
+            <h3>If Claim is Closed — Scenarios</h3>
+            <div class="sop-scenario"><div class="sop-scenario-title">Scenario 1 — Paid/Settled with Patient</div><p>Ask if medical funds set aside. If YES → inform adjuster where to remit. If NO → confirm BI settlement date. Add to Escalation Tracker. NRD: 30 Days.</p></div>
+            <div class="sop-scenario"><div class="sop-scenario-title">Scenario 2 — Claim Denied</div><p>Get denial reason. Request EOB/denial letter to fax 615-873-0959 or MVA@enablecomp.com. Move to Return Review. NRD: 1 Day.</p></div>
+            <div class="sop-scenario"><div class="sop-scenario-title">Scenario 3 — Patient Unresponsive/Lack of Interest</div><p>Send TPL Claim Letter to patient. Move to Return Review. NRD: 1 Day.</p></div>
+            <div class="sop-scenario"><div class="sop-scenario-title">Scenario 4 — Settled with Attorney</div><p>Confirm settlement date and date of patient release. Add to Escalation Tracker. NRD: 30 Days.</p></div>
+            <h3>If Claim is Open</h3>
+            <p>Confirm receipt of bill and lien. If not received → get email/fax for resubmission. Then move to BSP and notate what needs to be sent. NRD: 60 Days.</p>
+            <div class="sop-warning">After 2+ unsuccessful follow-ups, escalate to adjuster supervisor. If still unable — add to Escalation Tracker.</div>
+          </div>
+
+          <!-- PAGE: EOB Requested -->
+          <div class="sop-page" id="sopPage-eob-requested">
+            <h1>EOB Requested</h1>
+            <p class="sop-subtitle">Requesting Explanation of Benefits from payers</p>
+            <div class="sop-warning">❗ If EOB is already on the Documents tab — do NOT call. Simply forward to EOB Review. NRD: 7 Days.</div>
+            <h2>When to Request</h2>
+            <p>Always attempt to obtain an EOB when working Bill Filed accounts, especially after a denial.</p>
+            <h2>How to Request — Calling Payer</h2>
+            <div class="sop-step"><span class="sop-step-num">1</span><span class="sop-step-text">Call payer's Provider Support Line.</span></div>
+            <div class="sop-step"><span class="sop-step-num">2</span><span class="sop-step-text">Request EOB (provide claim number / date of service).</span></div>
+            <div class="sop-step"><span class="sop-step-num">3</span><span class="sop-step-text">Confirm delivery method: mail, fax, or electronic.</span></div>
+            <div class="sop-note">"Called FP Progressive at 888-888-8888. Spoke with [Rep]. Claim denied for [reason]. Requested EOB via fax/email at MVA@enablecomp.com or 615-873-0959."</div>
+            <ul><li><strong>Status:</strong> EOB Requested | <strong>Review:</strong> 15 Days</li></ul>
+            <h2>Special Scenarios</h2>
+            <table class="sop-table"><thead><tr><th>Situation</th><th>Action</th></tr></thead><tbody>
+              <tr><td>Denial — Missing Medical Records</td><td>Move to Request Rebill immediately. Add note. Do NOT wait for EOB.</td></tr>
+              <tr><td>Denial — Missing Info (already on file)</td><td>Still request EOB for appeal. Keep status: EOB Requested.</td></tr>
+              <tr><td>EOB already sent by payer</td><td>Document date/destination. Move to EOB Review. NRD: Next Business Day.</td></tr>
+              <tr><td>Payer refuses (Third Party)</td><td>Document refusal. Move to EOB Review. NRD: Next Business Day.</td></tr>
+              <tr><td>Portal access needed (no access)</td><td>Document. Move to EOB Review. NRD: 1 Day.</td></tr>
+            </tbody></table>
+            <h2>Escalation</h2>
+            <p>After <strong>4 unsuccessful attempts</strong> → create GWF escalation. Document: all calls made, additional numbers tried, supervisor/adjuster escalation.</p>
+            <h2>Follow-up Timeline</h2>
+            <p>Follow up every <strong>2 weeks</strong> if no response received.</p>
+          </div>
+
+          <!-- PAGE: Communication Standards -->
+          <div class="sop-page" id="sopPage-communication">
+            <h1>Communication Standards</h1>
+            <p class="sop-subtitle">Professional communication requirements for all payer/patient contact</p>
+            <ul>
+              <li>Answer calls promptly — no more than 3 rings when possible</li>
+              <li>Use a professional greeting and introduce yourself by name</li>
+              <li>Maintain an upbeat, professional tone at all times</li>
+              <li>Pause clearly when reading numerical values (billed charges, check amounts)</li>
+              <li>Use the full date format: Month Day, Year</li>
+              <li>Be cautious with abbreviations when communicating externally</li>
+              <li>Respect the communication preference of the recipient (phone or email)</li>
+            </ul>
+            <div class="sop-warning">If a patient is rude or unwilling to provide info, say: "We're just verifying your date of birth so we can confirm we're talking to the right person. If you don't feel comfortable, I completely understand — I'll send a letter to your address on file instead."</div>
+            <h2>Patient Requests</h2>
+            <ul>
+              <li>If a patient requests a bill, advise them to contact the facility directly.</li>
+              <li>Always clarify you are NOT billing the patient directly — only submitting to their auto insurance.</li>
+            </ul>
+          </div>
+
+          <!-- PAGE: Voicemail Guide -->
+          <div class="sop-page" id="sopPage-voicemail">
+            <h1>Voicemail Guide</h1>
+            <p class="sop-subtitle">Scripts and NRD rules for voicemails</p>
+            <h2>Updated NRD Rules</h2>
+            <table class="sop-table"><thead><tr><th>Workflow</th><th>Voicemail Successful</th><th>Voicemail Unsuccessful</th></tr></thead><tbody>
+              <tr><td>Bill Filed / Commercial / Bill POR</td><td>NRD: 2 Days</td><td>NRD: 1 Day</td></tr>
+              <tr><td>Patient Pursuit</td><td>NRD: 7 Days</td><td>NRD: 7 Days</td></tr>
+            </tbody></table>
+            <h2>Payer Voicemail Script</h2>
+            <div class="sop-script">"Hello, this is [Your Name] calling from [Facility] to obtain the bill status for patient [Patient Name] with Policy Number [Subscriber ID] with a date of service of [##/##/##]. Billed Charge amount is [$00.00]. If you could please return my call at [Your Number] and reference Claim ID [##########]."</div>
+            <h3>Voicemail Details to Include</h3>
+            <ul>
+              <li>Your Name & Facility Name</li>
+              <li>Patient Name & Subscriber ID</li>
+              <li>Date of Service & Billed Charge</li>
+              <li>Callback Number & Claim ID</li>
+            </ul>
+            <h2>Attorney Voicemail Script</h2>
+            <div class="sop-script">"My name is [Name] calling from [Facility]. Our records indicate you may be representing [Patient Name] who was involved in an accident on [date]. Please confirm representation by sending a letter of representation and medical authorization to MVA@enablecomp.com or fax 615-486-6518."</div>
+            <h2>Patient Voicemail Script</h2>
+            <div class="sop-script">"Good Morning/Afternoon. My name is _____ calling from [Facility]. Please return my call at (615) 694-8131 ext 992566 and reference Claim ID _________. Thank you."</div>
+          </div>
+
+          <!-- PAGE: Compliance -->
+          <div class="sop-page" id="sopPage-compliance">
+            <h1>Compliance & Data Protection</h1>
+            <p class="sop-subtitle">HIPAA compliance and data protection requirements</p>
+            <ul>
+              <li>Mark sensitive information for redaction when required</li>
+              <li>Follow HIPAA compliance when sharing patient data</li>
+              <li>Document all communications and account updates</li>
+              <li>Ensure billed charges match submitted claim data</li>
+            </ul>
+            <div class="sop-warning">All outbound/inbound email correspondence must be uploaded to Enforcer. All communication must remain professional.</div>
+            <h2>Save to Related Feature</h2>
+            <p>The <strong>"Save to Related"</strong> feature copies a note to all related claims not in closed/return status. If you only want to save to the displayed account, use the standard <strong>"Save"</strong> button.</p>
+          </div>
+
+          <!-- PAGE: FAQ -->
+          <div class="sop-page" id="sopPage-faq">
+            <h1>FAQ / Additional Updates</h1>
+            <p class="sop-subtitle">Frequently asked questions and recent updates</p>
+            <h2>FAQ</h2>
+            <ul>
+              <li><strong>What is the Subscriber ID?</strong> — It is the claim number.</li>
+              <li><strong>What fax template for TPL/BI fax submissions?</strong> — Use the liability claim packet template.</li>
+              <li><strong>Policy number field required?</strong> — Not required. Only add if obtained from payer during validation.</li>
+              <li><strong>Payer location not auto-selected?</strong> — Manually select the correct address from the dropdown. See cheat sheet.</li>
+            </ul>
+            <h2>Recent Updates</h2>
+            <ul>
+              <li>If RS needs to <strong>send or resubmit a bill</strong> to have an EOB → Move to <strong>Request Rebill — Initial</strong>. NRD: 7 Days.</li>
+              <li>If <strong>EOB is attached</strong> on Documents tab → Move to <strong>EOB Review</strong>. NRD: 10 Days.</li>
+            </ul>
+          </div>
+
+          <!-- PAGE: Abbreviations -->
+          <div class="sop-page" id="sopPage-abbreviations">
+            <h1>Abbreviations</h1>
+            <p class="sop-subtitle">Quick reference for all MVA billing abbreviations</p>
+            <table class="sop-table"><thead><tr><th>Abbr.</th><th>Meaning</th></tr></thead><tbody>
+              <tr><td>ICD</td><td>International Classification of Disease</td></tr>
+              <tr><td>NPI</td><td>National Provider Identifier</td></tr>
+              <tr><td>CPT</td><td>Common Procedural Terminology</td></tr>
+              <tr><td>HCPCS</td><td>Healthcare Common Procedural Coding System</td></tr>
+              <tr><td>SMVA</td><td>Single Motor Vehicle Accident</td></tr>
+              <tr><td>MMVA</td><td>Multiple Motor Vehicle Accident</td></tr>
+              <tr><td>PMVA</td><td>Pedestrian Motor Vehicle Accident</td></tr>
+              <tr><td>PIP</td><td>Personal Injury Protection</td></tr>
+              <tr><td>UIM</td><td>Under Insured Motorist</td></tr>
+              <tr><td>UM</td><td>Uninsured Motorist</td></tr>
+              <tr><td>BI</td><td>Bodily Injury</td></tr>
+              <tr><td>COB</td><td>Coordination of Benefits</td></tr>
+              <tr><td>TPL</td><td>Third Party Liability</td></tr>
+              <tr><td>POS</td><td>Place of Service</td></tr>
+              <tr><td>DRG</td><td>Diagnostic Related Codes</td></tr>
+              <tr><td>LOR</td><td>Letter of Representation</td></tr>
+              <tr><td>VR</td><td>Validation Representative</td></tr>
+              <tr><td>GTM</td><td>Global Team Member</td></tr>
+              <tr><td>MA</td><td>Medical Authorization</td></tr>
+              <tr><td>BSP</td><td>Bill Submission Pending status</td></tr>
+              <tr><td>AOB</td><td>Assignment of Benefits</td></tr>
+              <tr><td>CS</td><td>Client System</td></tr>
+              <tr><td>ROI</td><td>Release of Information</td></tr>
+              <tr><td>HB</td><td>Hospital Bills</td></tr>
+              <tr><td>PB</td><td>Professional Bills</td></tr>
+            </tbody></table>
+          </div>
+
+        </div><!-- /sopContent -->
+
+        <!-- AI Chat Strip -->
+        <div id="sopAIStrip">
+          <div id="sopAIToggleRow" onclick="sopToggleAI()">
+            <div id="sopAIToggleLabel">
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="8" cy="8" r="6"/><path d="M6 6.5c0-1.1.9-2 2-2s2 .9 2 2c0 1-.7 1.5-1.5 1.8V10"/><circle cx="8" cy="12.5" r=".5" fill="currentColor" stroke="none"/></svg>
+              Ask the SOP Assistant
+              <span style="font-size:10px;font-weight:500;color:#9298b2">AI-powered answers from the MVA SOP</span>
+            </div>
+            <span id="sopAICaret">▲</span>
+          </div>
+          <div id="sopAIPanel" class="open">
+            <div id="sopChatMsgs">
+              <div class="sop-chat-msg ai">👋 Hi! I'm your SOP assistant. Ask me anything about MVA billing procedures — scripts, statuses, scenarios, or what to do next.</div>
+            </div>
+            <div class="sop-quick-q" id="sopQuickQ">
+              <span class="sop-qq-chip" onclick="sopAskQuick('What documents are required for a PIP claim?')">PIP documents?</span>
+              <span class="sop-qq-chip" onclick="sopAskQuick('What is the NRD after leaving a voicemail for Bill Filed?')">Voicemail NRD?</span>
+              <span class="sop-qq-chip" onclick="sopAskQuick('What do I do when a TPL claim is denied?')">TPL denial steps</span>
+              <span class="sop-qq-chip" onclick="sopAskQuick('What status and review date after a claim is paid?')">Paid → status?</span>
+              <span class="sop-qq-chip" onclick="sopAskQuick('When do I add a claim to the Escalation Tracker?')">Escalation Tracker</span>
+            </div>
+            <div id="sopAIInputRow">
+              <input id="sopAIInput" type="text" placeholder="Ask about any SOP procedure…" onkeydown="if(event.key==='Enter')sopAISend()">
+              <button id="sopAISendBtn" onclick="sopAISend()">Ask</button>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /sopRight -->
+    </div><!-- /sopBody -->
+  </div><!-- /sopPanel -->
+</div><!-- /sopModal -->
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+// ClaimOS SOP Reference Module
+// ═══════════════════════════════════════════════════════════════
+(function(){
+
+// ── State ──
+var _currentPage = 'overview';
+var _aiOpen = true;
+var _chatHistory = [];
+
+// ── Open / Close ──
+window.openSOPModal = function(){
+  document.getElementById('sopModal').classList.add('open');
+  document.getElementById('sopSearch').value = '';
+  sopClearHighlights();
+  setTimeout(function(){ document.getElementById('sopSearch').focus(); }, 120);
+};
+window.closeSOPModal = function(){
+  document.getElementById('sopModal').classList.remove('open');
+};
+
+// ── Navigation ──
+window.sopGoTo = function(pageId){
+  // Hide all pages
+  document.querySelectorAll('.sop-page').forEach(function(p){ p.classList.remove('active'); });
+  // Show target
+  var pg = document.getElementById('sopPage-' + pageId);
+  if(pg) pg.classList.add('active');
+  // Update nav
+  document.querySelectorAll('.sop-nav-item').forEach(function(n){ n.classList.remove('active'); });
+  var navItem = document.querySelector('[data-page="' + pageId + '"]');
+  if(navItem) navItem.classList.add('active');
+  _currentPage = pageId;
+  // Scroll content to top
+  document.getElementById('sopContent').scrollTop = 0;
+};
+
+// ── Search / Highlight ──
+window.sopSearchFilter = function(query){
+  query = query.trim();
+  sopClearHighlights();
+  if(!query){ return; }
+  var q = query.toLowerCase();
+  // Search all pages
+  var found = null;
+  document.querySelectorAll('.sop-page').forEach(function(pg){
+    var text = pg.textContent.toLowerCase();
+    if(!found && text.includes(q)){
+      found = pg.id.replace('sopPage-','');
+    }
+  });
+  if(found) {
+    sopGoTo(found);
+    // Highlight matches in the active page
+    setTimeout(function(){ sopHighlightInPage(query); }, 50);
+  }
+};
+function sopHighlightInPage(query){
+  var content = document.getElementById('sopContent');
+  var re = new RegExp('(' + query.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + ')', 'gi');
+  function walkAndMark(node){
+    if(node.nodeType === 3){
+      if(re.test(node.textContent)){
+        var span = document.createElement('span');
+        span.innerHTML = node.textContent.replace(re,'<mark class="sop-hl">$1</mark>');
+        node.parentNode.replaceChild(span, node);
+      }
+    } else if(node.nodeType === 1 && node.tagName !== 'SCRIPT' && node.tagName !== 'STYLE'){
+      Array.from(node.childNodes).forEach(walkAndMark);
+    }
+  }
+  var activePage = content.querySelector('.sop-page.active');
+  if(activePage) walkAndMark(activePage);
+  // Scroll to first highlight
+  var first = content.querySelector('mark.sop-hl');
+  if(first) first.scrollIntoView({behavior:'smooth',block:'center'});
+}
+function sopClearHighlights(){
+  document.querySelectorAll('mark.sop-hl').forEach(function(m){
+    var parent = m.parentNode;
+    parent.replaceChild(document.createTextNode(m.textContent), m);
+    parent.normalize();
+  });
+}
+
+// ── AI Toggle ──
+window.sopToggleAI = function(){
+  _aiOpen = !_aiOpen;
+  var panel = document.getElementById('sopAIPanel');
+  var caret = document.getElementById('sopAICaret');
+  if(_aiOpen){ panel.classList.add('open'); caret.classList.add('open'); }
+  else { panel.classList.remove('open'); caret.classList.remove('open'); }
+};
+
+// ── AI Send ──
+window.sopAISend = function(){
+  var inp = document.getElementById('sopAIInput');
+  var q = inp.value.trim();
+  if(!q) return;
+  inp.value = '';
+  sopAskQuestion(q);
+};
+window.sopAskQuick = function(q){
+  sopAskQuestion(q);
+  // Hide quick-q chips after first use
+  document.getElementById('sopQuickQ').style.display='none';
+};
+
+function sopAskQuestion(question){
+  // Add user message
+  sopAddMessage('user', question);
+  // Add loading bubble
+  var loadId = 'sop-load-' + Date.now();
+  sopAddMessage('ai', 'Thinking…', loadId, true);
+  // Scroll
+  sopScrollChat();
+  // Build history for API
+  _chatHistory.push({role:'user', content: question});
+
+  // System prompt with full SOP knowledge
+  var systemPrompt = `You are a knowledgeable MVA billing SOP assistant embedded inside ClaimOS. You help medical billing agents follow the Motor Vehicle Accident Standard Operating Procedures precisely. Answer questions clearly and concisely, using bullet points where helpful. Focus only on MVA billing procedures.
+
+Key SOP knowledge:
+- WORKFLOWS: Patient Pursuit → Payer Validation → Bill Submission Pending → Bill Filed (FP/Commercial/TPL)
+- CLAIM STATUSES: Processing (30d follow-up), Pending Payment (15d), Paid → Payment Mailed (15d), Denied → EOB Requested (15d), Not Received → Request ReBill Initial (1d)
+- VOICEMAIL NRDs: Bill Filed/Commercial/Bill POR = 2 days (successful) or 1 day (unsuccessful). Patient Pursuit = 7 days always.
+- EOB RULES: If EOB already on Documents tab → forward to EOB Review, NRD 7 days (no need to call). After 4 unsuccessful attempts → GWF escalation. Follow up every 2 weeks.
+- DOCUMENTS: PIP claims require medical records. MedPay only needs AOB + UB/1500. All claims need AOB + UB/1500.
+- TIMELY FILING: If deadline within 10 days or shown in red → add to escalation tracker for "missed deadline."
+- ATTORNEY REPS: Do NOT work accounts with attorney representation on FP Bill Filed. Move to Validation Pending Level 2.
+- ESCALATION: After 2+ unsuccessful TPL follow-ups → escalate to supervisor → Escalation Tracker.
+- CONTACT: EOB/Denial letters → MVA@enablecomp.com or fax 615-873-0959. LOR/MA → MVA@enablecomp.com or fax 615-486-6518.
+- ABBREVIATIONS: SMVA=Single MVA, MMVA=Multiple MVA, PMVA=Pedestrian MVA, PIP=Personal Injury Protection, BI=Bodily Injury, TPL=Third Party Liability, FP=First Party, GTM=Global Team Member, BSP=Bill Submission Pending, AOB=Assignment of Benefits, LOR=Letter of Representation, MA=Medical Authorization.
+
+Answer based strictly on this SOP. If unsure, say so and suggest which section to review.`;
+
+  fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 1000,
+      system: systemPrompt,
+      messages: _chatHistory
+    })
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(data){
+    var text = (data.content && data.content[0] && data.content[0].text) ? data.content[0].text : 'Sorry, I couldn\'t get an answer. Please try again.';
+    // Remove loading bubble
+    var loadEl = document.getElementById(loadId);
+    if(loadEl) loadEl.remove();
+    // Add AI response
+    sopAddMessage('ai', text);
+    _chatHistory.push({role:'assistant', content: text});
+    sopScrollChat();
+  })
+  .catch(function(){
+    var loadEl = document.getElementById(loadId);
+    if(loadEl) loadEl.remove();
+    sopAddMessage('ai', 'Connection error. Please check your internet and try again.');
+    sopScrollChat();
+  });
+}
+
+function sopAddMessage(role, text, id, loading){
+  var msgs = document.getElementById('sopChatMsgs');
+  var div = document.createElement('div');
+  div.className = 'sop-chat-msg ' + role + (loading ? ' loading' : '');
+  if(id) div.id = id;
+  // Convert simple markdown-like formatting
+  div.innerHTML = text
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\n- /g, '<br>• ')
+    .replace(/\n/g, '<br>');
+  msgs.appendChild(div);
+}
+
+function sopScrollChat(){
+  var msgs = document.getElementById('sopChatMsgs');
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+// ── Keyboard shortcut: Ctrl+Shift+S to open SOP ──
+document.addEventListener('keydown', function(e){
+  if(e.ctrlKey && e.shiftKey && e.key === 'S'){
+    e.preventDefault();
+    if(document.getElementById('sopModal').classList.contains('open')){
+      closeSOPModal();
+    } else {
+      openSOPModal();
+    }
+  }
+  if(e.key === 'Escape' && document.getElementById('sopModal').classList.contains('open')){
+    closeSOPModal();
+  }
+});
+
+})();
+</script>
+
 </body>
 </html>
 
